@@ -1,112 +1,112 @@
-# Daily Grow — Yandex Maps Reviews Integration
+# Daily Grow — Интеграция отзывов Яндекс Карт
 
-Laravel 10 + Vue 3 SPA application that integrates with Yandex Maps to display business reviews and ratings.
+SPA-приложение на Laravel 10 + Vue 3 для отображения отзывов и рейтингов организаций с Яндекс Карт.
 
-## Tech Stack
+## Стек технологий
 
-- **Backend:** Laravel 10 (PHP 8.1), Laravel Sanctum
-- **Frontend:** Vue 3, Vue Router 4, Pinia, Tailwind CSS 3
-- **Build:** Vite 4
-- **Database:** MySQL
+- **Бэкенд:** Laravel 10 (PHP 8.1), Laravel Sanctum
+- **Фронтенд:** Vue 3, Vue Router 4, Pinia, Tailwind CSS 3
+- **Сборка:** Vite 4
+- **База данных:** MySQL
 
-## Features
+## Функциональность
 
-- Login/logout with session-based authentication (Sanctum SPA)
-- Settings page — save a Yandex Maps business URL
-- Reviews page — live-scrape and display reviews from the saved URL
-- Overall rating and total review count widget
-- SOLID/DRY architecture: interfaces, service layer, repository pattern
+- Авторизация/выход через сессионную аутентификацию (Sanctum SPA)
+- Страница настроек — сохранение ссылки на организацию в Яндекс Картах
+- Страница отзывов — парсинг и отображение отзывов по сохранённой ссылке
+- Виджет общего рейтинга и количества отзывов
+- Архитектура SOLID/DRY: интерфейсы, сервисный слой, паттерн репозиторий
 
-## Requirements
+## Требования
 
 - PHP 8.1+
 - Composer
 - Node.js 16+
 - MySQL 5.7+
 
-## Installation
+## Установка
 
 ```bash
-# 1. Clone the repository
+# 1. Клонировать репозиторий
 git clone https://github.com/YOUR_USERNAME/tt-tursite.git
 cd tt-tursite
 
-# 2. Install PHP dependencies
+# 2. Установить PHP-зависимости
 composer install
 
-# 3. Install JS dependencies
+# 3. Установить JS-зависимости
 npm install
 
-# 4. Copy environment config
+# 4. Скопировать конфигурацию окружения
 cp .env.example .env
 
-# 5. Generate application key
+# 5. Сгенерировать ключ приложения
 php artisan key:generate
 
-# 6. Configure database in .env
+# 6. Настроить базу данных в .env
 # DB_DATABASE=tt_tursite
 # DB_USERNAME=root
 # DB_PASSWORD=
 
-# 7. Create the database
+# 7. Создать базу данных
 mysql -u root -e "CREATE DATABASE IF NOT EXISTS tt_tursite"
 
-# 8. Run migrations and seed
+# 8. Выполнить миграции и сидер
 php artisan migrate --seed
 
-# 9. Build frontend assets
+# 9. Собрать фронтенд
 npm run build
 
-# 10. Start the server
+# 10. Запустить сервер
 php artisan serve
 ```
 
-## Development
+## Разработка
 
 ```bash
-# Run Vite dev server (hot reload)
+# Запустить Vite dev-сервер (горячая перезагрузка)
 npm run dev
 
-# Run Laravel server
+# Запустить Laravel-сервер
 php artisan serve
 ```
 
-Open http://localhost:8000 in the browser.
+Откройте http://localhost:8000 в браузере.
 
-## Default Credentials
+## Учётные данные по умолчанию
 
-| Field    | Value              |
-|----------|--------------------|
-| Email    | admin@example.com  |
-| Password | password           |
+| Поле   | Значение           |
+|--------|--------------------|
+| Email  | admin@example.com  |
+| Пароль | password           |
 
-## Usage
+## Использование
 
-1. Log in with the credentials above
-2. Go to **Настройки** (Settings)
-3. Paste a Yandex Maps reviews URL, e.g.: `https://yandex.ru/maps/org/company_name/1234567890/reviews/`
-4. Click **Сохранить** (Save)
-5. Go to **Отзывы** (Reviews) to see the scraped reviews and rating
+1. Авторизуйтесь с указанными выше данными
+2. Перейдите в **Настройки**
+3. Вставьте ссылку на отзывы Яндекс Карт, например: `https://yandex.ru/maps/org/company_name/1234567890/reviews/`
+4. Нажмите **Сохранить**
+5. Перейдите в **Отзывы** для просмотра спарсенных отзывов и рейтинга
 
-## Architecture
+## Архитектура
 
 ```
 app/
 ├── Http/Controllers/Api/     # AuthController, SettingsController, ReviewController
 ├── Http/Requests/            # LoginRequest, SaveSettingsRequest
 ├── Models/                   # User, Setting
-├── Repositories/             # SettingRepository (interface + implementation)
-├── Services/                 # YandexReviewService (interface + implementation)
-└── Providers/                # AppServiceProvider (DI bindings)
+├── Repositories/             # SettingRepository (интерфейс + реализация)
+├── Services/                 # YandexReviewService (интерфейс + реализация)
+└── Providers/                # AppServiceProvider (DI-привязки)
 
 resources/js/
-├── router/                   # Vue Router configuration
-├── stores/                   # Pinia stores (auth, settings)
+├── router/                   # Конфигурация Vue Router
+├── stores/                   # Pinia-хранилища (auth, settings)
 ├── layouts/                  # AuthLayout, DashboardLayout
 ├── pages/                    # LoginPage, ReviewsPage, SettingsPage
 └── components/               # AppSidebar, ReviewCard, RatingWidget, StarRating
 ```
 
-## License
+## Лицензия
 
 MIT
