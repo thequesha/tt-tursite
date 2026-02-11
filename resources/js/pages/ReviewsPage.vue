@@ -100,11 +100,15 @@ const fetchReviews = async (page = 1) => {
             pagination.value = response.data.pagination;
         }
     } catch (err) {
-        if (err.response?.status === 422) {
+        const status = err.response?.status;
+        if (status === 422) {
             isNotConfigured.value = true;
             error.value = err.response.data.message;
+        } else if (status === 401) {
+            error.value = 'Сессия истекла. Пожалуйста, войдите снова.';
         } else {
-            error.value = err.response?.data?.message || 'Не удалось загрузить отзывы.';
+            error.value = err.response?.data?.message || `Не удалось загрузить отзывы (${status || 'сеть'}).`;
+            console.error('Reviews fetch error:', status, err.message, err.response?.data);
         }
     } finally {
         loading.value = false;
