@@ -190,16 +190,32 @@ class SyncReviews extends Command
             $sortResult = $page->evaluate("
                 (function() {
                     var lines = document.querySelectorAll('.rating-ranking-view__popup-line');
+                    var targets = ['По новизне', 'By date', 'Newest', 'Newest first', 'By newest'];
                     for (var i = 0; i < lines.length; i++) {
-                        if (lines[i].getAttribute('aria-label') === 'По новизне') {
-                            lines[i].click();
-                            return 'clicked По новизне';
+                        var label = lines[i].getAttribute('aria-label') || '';
+                        var text = lines[i].textContent.trim();
+                        for (var t = 0; t < targets.length; t++) {
+                            if (label === targets[t] || text === targets[t]) {
+                                lines[i].click();
+                                return 'clicked: ' + text;
+                            }
                         }
                     }
-                    return 'not found (' + lines.length + ' options)';
+                    // Fallback: click the 2nd option (usually 'by date')
+                    if (lines.length >= 2) {
+                        lines[1].click();
+                        return 'fallback clicked 2nd: ' + lines[1].textContent.trim();
+                    }
+                    // Log all available options for debugging
+                    var opts = [];
+                    for (var j = 0; j < lines.length; j++) {
+                        opts.push(lines[j].getAttribute('aria-label') + ' / ' + lines[j].textContent.trim());
+                    }
+                    return 'not found in: ' + JSON.stringify(opts);
                 })()
             ")->getReturnValue(10000);
             $this->info("  Sort click: {$sortResult}");
+            Log::info('SyncReviews: sort click', ['result' => $sortResult]);
             sleep(10);
 
             $this->info("  Captured URL: " . ($capturedUrl ? 'YES' : 'NO'));
