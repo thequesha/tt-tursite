@@ -42,7 +42,10 @@ class SyncReviews extends Command
             $result = $this->fetchAllReviewsViaChrome($setting, $orgId);
 
             if ($result === null) {
-                $setting->update(['sync_status' => 'failed', 'sync_message' => 'Не удалось загрузить отзывы']);
+                // sync_message already set by fetchAllReviewsViaChrome with specific reason
+                if ($setting->sync_status !== 'failed') {
+                    $setting->update(['sync_status' => 'failed', 'sync_message' => 'Не удалось загрузить отзывы']);
+                }
                 return 1;
             }
 
@@ -133,10 +136,12 @@ class SyncReviews extends Command
 
             // Navigate
             $this->info("  Navigating to: {$navUrl}");
+            Log::info('SyncReviews: navigating', ['url' => $navUrl]);
             $setting->update(['sync_message' => 'Загружаю страницу...']);
             $page->navigate($navUrl)->waitForNavigation('networkIdle', 90000);
             sleep(5);
             $this->info("  Page loaded.");
+            Log::info('SyncReviews: page loaded');
 
             // Extract rating from embedded JSON
             $rating = null;
@@ -206,12 +211,34 @@ class SyncReviews extends Command
             }
 
             if (!$capturedUrl) {
-                $this->warn("  Still no URL. Current page: ");
+                $curUrl = '';
                 try {
                     $curUrl = $page->evaluate("window.location.href")->getReturnValue(5000);
-                    $this->info("  " . $curUrl);
                 } catch (\Exception $e) {
                 }
+
+                $pageTitle = '';
+                try {
+                    $pageTitle = $page->evaluate("document.title")->getReturnValue(5000);
+                } catch (\Exception $e) {
+                }
+
+                $sortBtnText = '';
+                try {
+                    $sortBtnText = $page->evaluate("document.querySelector('div.rating-ranking-view') ? document.querySelector('div.rating-ranking-view').textContent : 'NO SORT BTN'")->getReturnValue(5000);
+                } catch (\Exception $e) {
+                }
+
+                $msg = "Sort не вызвал fetchReviews. URL: {$curUrl}, Title: {$pageTitle}, SortBtn: {$sortBtnText}";
+                $this->warn("  " . $msg);
+                Log::error('SyncReviews: no fetchReviews captured', [
+                    'currentUrl' => $curUrl,
+                    'pageTitle' => $pageTitle,
+                    'sortButton' => $sortBtnText,
+                    'clickResult' => $clickResult ?? null,
+                    'sortResult' => $sortResult ?? null,
+                ]);
+                $setting->update(['sync_status' => 'failed', 'sync_message' => 'Не удалось получить отзывы (sort не сработал)']);
                 return null;
             }
 
