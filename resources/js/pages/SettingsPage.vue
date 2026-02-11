@@ -27,11 +27,15 @@
                     placeholder="https://yandex.ru/maps/org/company_name/1234567890/reviews/" />
             </div>
 
-            <button type="submit" :disabled="settingsStore.loading"
-                class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                <span v-if="settingsStore.loading">Сохранение...</span>
-                <span v-else>Сохранить</span>
-            </button>
+            <div class="flex items-center gap-4">
+                <button type="submit" :disabled="settingsStore.loading"
+                    class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-lg text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span v-if="settingsStore.loading">Сохранение...</span>
+                    <span v-else>Сохранить</span>
+                </button>
+
+                <SyncButton ref="syncBtn" @sync-completed="onSyncCompleted" />
+            </div>
         </form>
     </div>
 </template>
@@ -39,9 +43,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useSettingsStore } from '@/stores/settings';
+import SyncButton from '@/components/SyncButton.vue';
 
 const settingsStore = useSettingsStore();
 const yandexUrl = ref('');
+const syncBtn = ref(null);
 
 onMounted(async () => {
     await settingsStore.fetchSettings();
@@ -50,5 +56,12 @@ onMounted(async () => {
 
 const handleSave = async () => {
     await settingsStore.saveSettings(yandexUrl.value);
+    if (settingsStore.success && syncBtn.value) {
+        syncBtn.value.startSync();
+    }
+};
+
+const onSyncCompleted = () => {
+    // Could refresh settings data if needed
 };
 </script>

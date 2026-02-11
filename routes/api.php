@@ -26,4 +26,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/settings', [SettingsController::class, 'store']);
 
     Route::get('/reviews', [ReviewController::class, 'index']);
+    Route::post('/reviews/sync', [ReviewController::class, 'sync']);
+    Route::get('/reviews/sync-status', [ReviewController::class, 'syncStatus']);
 });

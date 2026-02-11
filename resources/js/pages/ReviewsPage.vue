@@ -1,12 +1,14 @@
 <template>
     <div>
-        <!-- Header badge -->
-        <div class="mb-4">
+        <!-- Header badge + sync button -->
+        <div class="flex items-center justify-between mb-4">
             <div class="inline-flex items-center gap-[6px] h-[25px] px-2 rounded-[8px]"
                 style="background: #FFFFFF; border: 1px solid #DCE4EA;">
                 <img src="/images/icons/yandex-maps-icon.png" alt="" class="w-4 h-4" />
                 <span class="font-medium text-[12px] leading-[100%]" style="color: #363740;">Яндекс Карты</span>
             </div>
+
+            <SyncButton ref="syncBtn" @sync-completed="onSyncCompleted" />
         </div>
 
         <!-- Loading -->
@@ -36,9 +38,17 @@
             <!-- Reviews column -->
             <div class="flex flex-col gap-[20px]">
                 <div v-if="reviews.length === 0" class="text-sm py-8 text-center" style="color: #363740;">
-                    Отзывы не найдены.
+                    Отзывы не найдены. Нажмите «Обновить» для синхронизации.
                 </div>
-                <ReviewCard v-for="(review, index) in reviews" :key="index" :review="review" />
+                <ReviewCard v-for="review in reviews" :key="review.id" :review="review" />
+
+                <!-- Pagination -->
+                <PaginationBar
+                    :current-page="pagination.currentPage"
+                    :last-page="pagination.lastPage"
+                    :total="pagination.total"
+                    @page-change="goToPage"
+                />
             </div>
 
             <!-- Rating column -->
@@ -52,10 +62,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import ReviewCard from '@/components/ReviewCard.vue';
 import RatingWidget from '@/components/RatingWidget.vue';
+import PaginationBar from '@/components/PaginationBar.vue';
+import SyncButton from '@/components/SyncButton.vue';
 
 const loading = ref(true);
 const error = ref('');
@@ -63,17 +75,30 @@ const reviews = ref([]);
 const rating = ref(null);
 const totalReviews = ref(null);
 const isNotConfigured = ref(false);
+const syncBtn = ref(null);
+const pagination = ref({
+    currentPage: 1,
+    lastPage: 1,
+    perPage: 10,
+    total: 0,
+});
 
-const fetchReviews = async () => {
+const fetchReviews = async (page = 1) => {
     loading.value = true;
     error.value = '';
     isNotConfigured.value = false;
 
     try {
-        const response = await axios.get('/api/reviews');
+        const response = await axios.get('/api/reviews', {
+            params: { page, per_page: pagination.value.perPage },
+        });
         reviews.value = response.data.reviews || [];
         rating.value = response.data.rating;
         totalReviews.value = response.data.totalReviews;
+
+        if (response.data.pagination) {
+            pagination.value = response.data.pagination;
+        }
     } catch (err) {
         if (err.response?.status === 422) {
             isNotConfigured.value = true;
@@ -86,5 +111,14 @@ const fetchReviews = async () => {
     }
 };
 
-onMounted(fetchReviews);
+const goToPage = (page) => {
+    fetchReviews(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+const onSyncCompleted = () => {
+    fetchReviews(1);
+};
+
+onMounted(() => fetchReviews(1));
 </script>

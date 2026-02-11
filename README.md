@@ -110,3 +110,6 @@ resources/js/
 ## Лицензия
 
 MIT
+your_secure_password
+ttuser
+tt_tursite 
