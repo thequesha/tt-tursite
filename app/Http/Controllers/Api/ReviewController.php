@@ -28,7 +28,7 @@ class ReviewController extends Controller
             ], 422);
         }
 
-        $perPage = (int) $request->input('per_page', 10);
+        $perPage = (int) $request->input('per_page', 50);
         $perPage = min(max($perPage, 5), 50);
 
         $query = \App\Models\Review::where('user_id', $request->user()->id)
